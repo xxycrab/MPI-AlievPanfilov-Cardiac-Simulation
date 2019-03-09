@@ -55,8 +55,7 @@ double L2Norm(double sumSq) {
     return l2norm;
 }
 
-void
-solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter *plotter, double &L2, double &Linf) {
+void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter *plotter, double &L2, double &Linf) {
 
     // Simulated time is different from the integer timestep number
     double t = 0.0;
