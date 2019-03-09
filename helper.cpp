@@ -96,7 +96,7 @@ void init(double *E, double *E_prev, double *R, int m, int n) {
     E_prev_copy = E_prev + (n+2) + 1;
     R_copy = R + (n+2) + 1;
 
-    int rows = n/cb.px, cols = n/cb.py;
+    int rows = n/cb.py, cols = n/cb.px;
     int incr_row = n%(cb.py), incr_col = n%(cb.px);
     int incr_px = cb.px, incr_py = cb.py;
     incr_px--;
