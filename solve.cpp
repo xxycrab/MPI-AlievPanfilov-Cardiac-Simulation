@@ -55,7 +55,8 @@ double L2Norm(double sumSq) {
     return l2norm;
 }
 
-void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter *plotter, double &L2, double &Linf) {
+void
+solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter *plotter, double &L2, double &Linf) {
 
     // Simulated time is different from the integer timestep number
     double t = 0.0;
@@ -134,7 +135,7 @@ void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Pl
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define FUSED 1
+#define FUSED 0
 
 /************************************* MPI part ****************************************/
 #ifdef _MPI_
@@ -243,28 +244,52 @@ void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Pl
         }
 #else
         // Solve for the excitation, a PDE
-        for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
+//        for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
+//            E_tmp = E + j;
+//                E_prev_tmp = E_prev + j;
+//                for(i = 0; i < n; i++) {
+//                    E_tmp[i] = E_prev_tmp[i]+alpha*(E_prev_tmp[i+1]+E_prev_tmp[i-1]-4*E_prev_tmp[i]+E_prev_tmp[i+(n+2)]+E_prev_tmp[i-(n+2)]);
+//                }
+//        }
+//
+//        /*
+//         * Solve the ODE, advancing excitation and recovery variables
+//         *     to the next timtestep
+//         */
+//
+//        for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
+//            E_tmp = E + j;
+//            R_tmp = R + j;
+//        E_prev_tmp = E_prev + j;
+//            for(i = 0; i < n; i++) {
+//          E_tmp[i] += -dt*(kk*E_prev_tmp[i]*(E_prev_tmp[i]-a)*(E_prev_tmp[i]-1)+E_prev_tmp[i]*R_tmp[i]);
+//          R_tmp[i] += dt*(epsilon+M1* R_tmp[i]/( E_prev_tmp[i]+M2))*(-R_tmp[i]-kk*E_prev_tmp[i]*(E_prev_tmp[i]-b-1));
+//            }
+//        }
+        // use local variables instead of global to increase register hit rate
+        double e_tmp, r_tmp;
+        for (j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j += (n + 2)) {
             E_tmp = E + j;
-                E_prev_tmp = E_prev + j;
-                for(i = 0; i < n; i++) {
-                    E_tmp[i] = E_prev_tmp[i]+alpha*(E_prev_tmp[i+1]+E_prev_tmp[i-1]-4*E_prev_tmp[i]+E_prev_tmp[i+(n+2)]+E_prev_tmp[i-(n+2)]);
-                }
-        }
-
-        /*
-         * Solve the ODE, advancing excitation and recovery variables
-         *     to the next timtestep
-         */
-
-        for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
-            E_tmp = E + j;
+            E_prev_tmp = E_prev + j;
             R_tmp = R + j;
-        E_prev_tmp = E_prev + j;
-            for(i = 0; i < n; i++) {
-          E_tmp[i] += -dt*(kk*E_prev_tmp[i]*(E_prev_tmp[i]-a)*(E_prev_tmp[i]-1)+E_prev_tmp[i]*R_tmp[i]);
-          R_tmp[i] += dt*(epsilon+M1* R_tmp[i]/( E_prev_tmp[i]+M2))*(-R_tmp[i]-kk*E_prev_tmp[i]*(E_prev_tmp[i]-b-1));
+
+            double e_tmps[n];
+            // improve cache hit rate by put PDE and ODE in the same outer loop 
+            // so that reduce cache missing when loading E_prev_tmp and E_tmp
+            for (i = 0; i < n; i++) {
+                e_tmps[i] = E_prev_tmp[i] + alpha * (E_prev_tmp[i + 1] + E_prev_tmp[i - 1] - 4 * E_prev_tmp[i] +
+                                                     E_prev_tmp[i + (n + 2)] + E_prev_tmp[i - (n + 2)]);
+            }
+            for (i = 0; i < n; i++) {
+                e_tmp = e_tmps[i];
+                r_tmp = R_tmp[i];
+                e_tmp += -dt * (kk * e_tmp * (e_tmp - a) * (e_tmp - 1) + e_tmp * r_tmp);
+                r_tmp += dt * (epsilon + M1 * r_tmp / (e_tmp + M2)) * (-r_tmp - kk * e_tmp * (e_tmp - b - 1));
+                E_tmp[i] = e_tmp;
+                R_tmp[i] = r_tmp;
             }
         }
+
 #endif
 
         /////////////////////////////////////////////////////////////////////////////////
