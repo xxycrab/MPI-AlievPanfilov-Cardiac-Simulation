@@ -226,7 +226,6 @@ void init(double *E, double *E_prev, double *R, int m, int n) {
 /******************************************* End ***********************************************/
 }
 
-// No need to edit
 double *alloc1D(int m, int n) {
     int nx = n, ny = m;
     double *E;
@@ -236,7 +235,6 @@ double *alloc1D(int m, int n) {
 }
 
 
-// No need to edit
 void printMat(const char mesg[], double *E, int m, int n) {
     int i;
 #if 0
