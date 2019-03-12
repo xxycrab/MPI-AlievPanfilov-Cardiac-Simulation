@@ -1,6 +1,6 @@
 To use avx2 vectorization:
-1. Change the constant SIMD in solve.cpp to 1:
-#define SIMD 1
+1. un-comment the constant SIMD in solve.cpp:
+//#define SIMD 1 -> #define SIMD 1
 2. Use the Makefile.exp as:
 $make -f Makefile.exp
 to use avx2 vectorization

@@ -16,6 +16,9 @@
 #include "cblock.h"
 #include "Plotting.h"
 #include <emmintrin.h>
+#include <immintrin.h>
+
+//#define SIMD 1
 
 #ifdef _MPI_
 #include <mpi.h>
@@ -135,7 +138,7 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define FUSED 1
+#define FUSED 0
 
 /************************************* MPI part ****************************************/
 #ifdef _MPI_
@@ -206,7 +209,7 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
                 MPI_Wait(&(sendbot),MPI_STATUS_IGNORE);
             }
 
-            //Load left column of matrix from receive left
+            //Put left column of matrix in send left
             if (x1!=0){
                 int j=0;
                 for(i=n+2; i<(m+1)*(n+2); i+=n+2){
@@ -214,7 +217,7 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
                     j++;
                 }
             }
-            //Load right column of matrix from receive right
+            //Put right column of matrix in send right
             if (x1!=cb.px-1){
                 int j=0;
                 for(i=n+3+n; i<(m+1)*(n+2); i+=n+2){
@@ -228,11 +231,14 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
 
 /********************************* Computation part, to realize vectorization******************************************/
 #ifdef FUSED
-        // Solve for the excitation, a PDE
-        for (j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j += (n + 2)) {
+        // Solve for the excitation, a PDE        
+    for (j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j += (n + 2)) {
             E_tmp = E + j;
             E_prev_tmp = E_prev + j;
             R_tmp = R + j;
+#ifdef SIMD
+#pragma simd
+#endif
             for (i = 0; i < n; i++) {
                 E_tmp[i] = E_prev_tmp[i] + alpha * (E_prev_tmp[i + 1] + E_prev_tmp[i - 1] - 4 * E_prev_tmp[i] +
                                                     E_prev_tmp[i + (n + 2)] + E_prev_tmp[i - (n + 2)]);
@@ -274,13 +280,19 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
             R_tmp = R + j;
 
             double e_tmps[n];
-            // improve cache hit rate by put PDE and ODE in the same outer loop
+            // improve cache hit rate by put PDE and ODE in the same outer loop 
             // so that reduce cache missing when loading E_prev_tmp and E_tmp
-            for (i = 0; i < n; i++) {
+#ifdef SIMD
+#pragma simd
+#endif      
+          for (i = 0; i < n; i++) {
                 e_tmps[i] = E_prev_tmp[i] + alpha * (E_prev_tmp[i + 1] + E_prev_tmp[i - 1] - 4 * E_prev_tmp[i] +
                                                      E_prev_tmp[i + (n + 2)] + E_prev_tmp[i - (n + 2)]);
             }
-            for (i = 0; i < n; i++) {
+#ifdef SIMD
+#pragma simd
+#endif
+          for (i = 0; i < n; i++) {
                 e_tmp = e_tmps[i];
                 r_tmp = R_tmp[i];
                 e_tmp += -dt * (kk * e_tmp * (e_tmp - a) * (e_tmp - 1) + e_tmp * r_tmp);
