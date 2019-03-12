@@ -135,7 +135,7 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define FUSED 0
+#define FUSED 1
 
 /************************************* MPI part ****************************************/
 #ifdef _MPI_
@@ -206,7 +206,7 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
                 MPI_Wait(&(sendbot),MPI_STATUS_IGNORE);
             }
 
-            //Put left column of matrix in send left
+            //Load left column of matrix from receive left
             if (x1!=0){
                 int j=0;
                 for(i=n+2; i<(m+1)*(n+2); i+=n+2){
@@ -214,7 +214,7 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
                     j++;
                 }
             }
-            //Put right column of matrix in send right
+            //Load right column of matrix from receive right
             if (x1!=cb.px-1){
                 int j=0;
                 for(i=n+3+n; i<(m+1)*(n+2); i+=n+2){
@@ -274,7 +274,7 @@ solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter
             R_tmp = R + j;
 
             double e_tmps[n];
-            // improve cache hit rate by put PDE and ODE in the same outer loop 
+            // improve cache hit rate by put PDE and ODE in the same outer loop
             // so that reduce cache missing when loading E_prev_tmp and E_tmp
             for (i = 0; i < n; i++) {
                 e_tmps[i] = E_prev_tmp[i] + alpha * (E_prev_tmp[i + 1] + E_prev_tmp[i - 1] - 4 * E_prev_tmp[i] +

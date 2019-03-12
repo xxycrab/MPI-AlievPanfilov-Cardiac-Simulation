@@ -44,7 +44,7 @@ void stats(double *E, int m, int n, double *_mx, double *sumSq){
         if (fe > mx)
             mx = fe;
 
-	printf("%d %d %9.8f\n", rowIndex, colIndex, fe);
+//	printf("%d %d %9.8f\n", rowIndex, colIndex, fe);
 
     }
     *_mx = mx;
