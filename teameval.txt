@@ -13,7 +13,7 @@ If you worked alone leave column B blank
 
 (1) List the names of your team members:
 
-A:
+A: Xinyu Xie, A53285829
 
  
 B:
@@ -23,23 +23,27 @@ B:
 (2) Estimate how much time each team member devoted to this project, in HOURS.
 
   	                        A 	       B
-meetings 	  	  	 
-coding 	  	  	 
-writeup 	  	  	 
-planning (alone) 	  	  	 
-total (including meetings) 	  	  	 
+meetings 	  	  	6              
+coding 	  	  	        15             
+writeup 	  	  	8               
+planning (alone) 	  	4                	 
+total (including meetings) 	33               	  	 
 
 
 (3) Discuss the following.
 (a) If you worked in a team, what were the major responsibilities
     of each team member?
+    We almost share every part of the work. Generally, we take turns to implement an idea and debug for each other.
 (b) Did you complete the assignment?
+    Yes!
 (c) What were your major strengths and weaknesses in doing this
     assignment (individually or in a team)?
     If in a team, also discuss how your team worked together.
 (d) What  lessons did you learn from these events.
+    Start early does benefit. Also before coding, write a complete pseudocode can help a lot.
 (e) If in a team, whether and how you plan to change the way
     your work together .
+    We like the way we work together.
 (f) Anything else that comes to mind.
 
 
