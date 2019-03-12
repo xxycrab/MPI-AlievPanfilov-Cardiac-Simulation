@@ -16,18 +16,18 @@ If you worked alone leave column B blank
 A: Xinyu Xie, A53285829
 
  
-B:
+B: Gehua Qin, A53283886
 
  
  
 (2) Estimate how much time each team member devoted to this project, in HOURS.
 
   	                        A 	       B
-meetings 	  	  	6              
-coding 	  	  	        15             
-writeup 	  	  	8               
-planning (alone) 	  	4                	 
-total (including meetings) 	33               	  	 
+meetings 	  	  	6               6
+coding 	  	  	        15             10
+writeup 	  	  	8               5
+planning (alone) 	  	4            4    	 
+total (including meetings) 	33      25         	  	 
 
 
 (3) Discuss the following.
